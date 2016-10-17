@@ -42,7 +42,6 @@ deis scale cmd=1 -a flask
 # configure
 deis config:set POWERED_BY=python3 -a flask
 
-deis releases -a flask
 
 deis releases:rollback -a flask
 
