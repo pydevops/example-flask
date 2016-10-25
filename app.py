@@ -19,6 +19,14 @@ def index():
                            hostname=socket.gethostname()
                            )
 
+@app.route('/flask')
+def ecs():
+    return render_template('index.html',
+                           powered_by=environ.get('POWERED_BY', 'ECS'),
+                           hostname=socket.gethostname()
+                           )
+
+
 if __name__ == '__main__':
     # Bind to PORT if defined, otherwise default to 5000.
     port = int(environ.get('PORT', 5000))
