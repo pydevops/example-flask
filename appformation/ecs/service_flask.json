@@ -1,0 +1,30 @@
+{
+        "family": "ecs-demo-svc-flask-TaskDefinition-1K8SNLKAIMCUJ",
+        "containerDefinitions": [
+            {
+                "environment": [
+                    {
+                        "name": "POWERED_BY",
+                        "value": "ECS_CLI"
+                    }
+                ],
+                "name": "flask-service",
+                "image": "pythonrocks/flask:20160101",
+                "essential": true,
+                "portMappings": [
+                    {
+                        "protocol": "tcp",
+                        "containerPort": 80,
+                        "hostPort": 0
+                    }
+                ],
+                "entryPoint": [],
+                "ulimits": [],
+                "memory": 250,
+                "command": [],
+                "extraHosts": [],
+                "cpu": 0,
+                "volumesFrom": []
+            }
+        ]
+}

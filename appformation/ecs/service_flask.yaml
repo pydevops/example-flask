@@ -1,0 +1,146 @@
+Description: >
+    This is an example of a long running ECS service that runs flask docker container port 80
+
+Parameters:
+
+    Cluster:
+        Description: Please provide the ECS Cluster ID that this service should run on
+        Type: String
+
+    ImageTag:
+        Description: Docker image tag
+        Type: String
+        Default: latest
+
+    VPC:
+        Description: The VPC that the ECS cluster is deployed to
+        Type: AWS::EC2::VPC::Id
+
+    Path:
+        Description: The path to register with the Application Load Balancer
+        Type: String
+        Default: /flask
+
+    PoweredByValue:
+        Description: A configuration value for testing
+        Type: String
+        Default: MyECS
+
+
+Resources:
+
+    Service:
+        Type: AWS::ECS::Service
+        Properties:
+            Cluster: !Ref Cluster
+            Role: !Ref ServiceRole
+            DesiredCount: 1
+            TaskDefinition: !Ref TaskDefinition
+            LoadBalancers:
+                - ContainerName: "flask-service"
+                  ContainerPort: 80
+                  TargetGroupArn: !Ref TargetGroup
+
+    TaskDefinition:
+        Type: AWS::ECS::TaskDefinition
+        Properties:
+            Family: flask
+            ContainerDefinitions:
+                -
+                  Name: "flask-service"
+                  Essential: true
+                  Image: !Sub pythonrocks/flask:${ImageTag}
+                  Memory: 250
+                  Environment:
+                      - Name: POWERED_BY
+                        Value: !Ref PoweredByValue
+                  PortMappings:
+                    - ContainerPort: 80
+                      HostPort: 0
+
+
+
+    TargetGroup:
+        Type: AWS::ElasticLoadBalancingV2::TargetGroup
+        Properties:
+            Name: FlaskTargetGroup
+            VpcId: !Ref VPC
+            Port: 80
+            Protocol: HTTP
+            Matcher:
+                HttpCode: 200-299
+            HealthCheckIntervalSeconds: 10
+            HealthCheckPath: /
+            HealthCheckProtocol: HTTP
+            HealthCheckTimeoutSeconds: 5
+            HealthyThresholdCount: 2
+            Tags:
+                - Key: CostCenter
+                  Value: cc
+                - Key: Project
+                  Value: myproject
+
+
+    ListenerRule:
+        Type: AWS::ElasticLoadBalancingV2::ListenerRule
+        Properties:
+            ListenerArn: !ImportValue ALBListener
+            Priority: 2
+            Conditions:
+                - Field: path-pattern
+                  Values:
+                    - !Ref Path
+            Actions:
+                - TargetGroupArn: !Ref TargetGroup
+                  Type: forward
+
+    # This IAM Role grants the service access to register/unregister with the
+    # Application Load Balancer (ALB). It is based on the default documented here:
+    # http://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_IAM_role.html
+    ServiceRole:
+        Type: AWS::IAM::Role
+        Properties:
+            RoleName: !Sub ecs-service-${AWS::StackName}
+            Path: /
+            AssumeRolePolicyDocument: |
+                {
+                    "Statement": [{
+                        "Effect": "Allow",
+                        "Principal": { "Service": [ "ecs.amazonaws.com" ]},
+                        "Action": [ "sts:AssumeRole" ]
+                    }]
+                }
+            Policies:
+                - PolicyName: !Sub ecs-service-${AWS::StackName}
+                  PolicyDocument:
+                    {
+                        "Version": "2012-10-17",
+                        "Statement": [{
+                                "Effect": "Allow",
+                                "Action": [
+                                    "ec2:AuthorizeSecurityGroupIngress",
+                                    "ec2:Describe*",
+                                    "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                                    "elasticloadbalancing:Describe*",
+                                    "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                                    "elasticloadbalancing:DeregisterTargets",
+                                    "elasticloadbalancing:DescribeTargetGroups",
+                                    "elasticloadbalancing:DescribeTargetHealth",
+                                    "elasticloadbalancing:RegisterTargets"
+                                ],
+                                "Resource": "*"
+                        }]
+                    }
+Outputs:
+
+    Service:
+        Description: A reference to the ECS Service
+        Value: !Ref Service
+
+    TargetGroup:
+        Description: A reference to the TargetGroup
+        Value: !Ref TargetGroup
+
+    TaskDefinition:
+        Description: A reference to the TaskDefintion
+        Value: !Ref TaskDefinition

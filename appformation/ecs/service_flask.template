@@ -1,0 +1,30 @@
+{
+        "family": "{FAMILY}",
+        "containerDefinitions": [
+            {
+                "environment": [
+                    {
+                        "name": "POWERED_BY",
+                        "value": "SET_BY_ECS_CLI"
+                    }
+                ],
+                "name": "flask-service",
+                "image": "pythonrocks/flask:{IMAGE_TAG}",
+                "essential": true,
+                "portMappings": [
+                    {
+                        "protocol": "tcp",
+                        "containerPort": 80,
+                        "hostPort": 0
+                    }
+                ],
+                "entryPoint": [],
+                "ulimits": [],
+                "memory": 250,
+                "command": [],
+                "extraHosts": [],
+                "cpu": 0,
+                "volumesFrom": []
+            }
+        ]
+}

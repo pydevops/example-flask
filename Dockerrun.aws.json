@@ -1,0 +1,19 @@
+{
+  "AWSEBDockerrunVersion": 2,
+  "volumes": [
+  ],
+  "containerDefinitions": [
+    {
+      "name": "flask-service",
+      "image": "pythonrocks/flask:v1",
+      "essential": true,
+      "memory": 128,
+      "portMappings": [
+        {
+          "hostPort": 8080,
+          "containerPort": 80
+        }
+    ]
+    }
+  ]
+}
