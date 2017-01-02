@@ -1,8 +1,8 @@
 FROM alpine:3.4
 
-ENV PORT 80
+ENV PORT 5000
 
-EXPOSE 80
+EXPOSE 5000
 
 RUN apk add --no-cache python3 && \
     python3 -m ensurepip && \
